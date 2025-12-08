@@ -191,7 +191,7 @@ void speed_calculation_and_publishing(void *pvParameters)
     {
       left_motor_vel_sign = 'n';
     }
-    Serial.printf("r%c%05.2f,l%c%05.2f,\n",
+    Serial.printf("r%c%05.2f,l%c%05.2f,\r\n",
               right_motor_vel_sign, fabs(omega_rot_R),
               left_motor_vel_sign,  fabs(omega_rot_L));
 
