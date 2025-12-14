@@ -137,27 +137,50 @@ namespace bumperbot_firmware
       std::string message;
       arduino_.ReadLine(message);
 
-      // Log całej wiadomości
       RCLCPP_INFO_STREAM(rclcpp::get_logger("BumperbotInterface"),
                          "Read message: \"" << message << "\"");
+
       std::stringstream ss(message);
       std::string res;
-      int multiplier = 1;
+
       while (std::getline(ss, res, ','))
       {
-        multiplier = res.at(1) == 'p' ? 1 : -1;
+        // Pomijamy puste wyniki split
+        if (res.size() < 3)
+          continue;
 
-        if (res.at(0) == 'r')
+        char motor = res[0];
+        char sign = res[1];
+        std::string number = res.substr(2);
+
+        if (sign != 'p' && sign != 'n')
+          continue;
+
+        double value = 0.0;
+        try
         {
-          velocity_states_.at(0) = multiplier * std::stod(res.substr(2, res.size()));
-          position_states_.at(0) += velocity_states_.at(0) * dt;
+          value = std::stod(number);
         }
-        else if (res.at(0) == 'l')
+        catch (...)
         {
-          velocity_states_.at(1) = multiplier * std::stod(res.substr(2, res.size()));
-          position_states_.at(1) += velocity_states_.at(1) * dt;
+          continue; // Nie rozpoznano liczby
+        }
+
+        if (sign == 'n')
+          value = -value;
+
+        if (motor == 'r')
+        {
+          velocity_states_[0] = value;
+          position_states_[0] += value * dt;
+        }
+        else if (motor == 'l')
+        {
+          velocity_states_[1] = value;
+          position_states_[1] += value * dt;
         }
       }
+
       last_run_ = rclcpp::Clock().now();
     }
     return hardware_interface::return_type::OK;
