@@ -26,6 +26,8 @@ namespace bumperbot_firmware
 
   CallbackReturn BumperbotInterface::on_init(const hardware_interface::HardwareInfo &hardware_info)
   {
+    auto node = get_node();
+    wheel_cmd_pub_ = node->create_publisher<std_msgs::msg::Float64MultiArray>("/wheel_velocity_ref", 10);
     CallbackReturn result = hardware_interface::SystemInterface::on_init(hardware_info);
     if (result != CallbackReturn::SUCCESS)
     {
@@ -189,6 +191,9 @@ namespace bumperbot_firmware
   hardware_interface::return_type BumperbotInterface::write(const rclcpp::Time &,
                                                             const rclcpp::Duration &)
   {
+    std_msgs::msg::Float64MultiArray msg;
+    msg.data = velocity_commands_;
+    wheel_cmd_pub_->publish(msg);
     // Implement communication protocol with the Arduino
     std::stringstream message_stream;
     char right_wheel_sign = velocity_commands_.at(0) >= 0 ? 'p' : 'n';

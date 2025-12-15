@@ -191,7 +191,7 @@ void speed_calculation_and_publishing(void *pvParameters)
     {
       left_motor_vel_sign = 'n';
     }
-    Serial.printf("r%c%05.2f,l%c%05.2f,\r\n",
+    Serial.printf("r%c%05.2f,l%c%05.2f, SEND\r\n",
               right_motor_vel_sign, fabs(omega_rot_R),
               left_motor_vel_sign,  fabs(omega_rot_L));
 
@@ -257,7 +257,7 @@ void motors_task_and_reference_handle(void *pvParameters)
       if (c == '\n')
       {
         decodeCommand(buffer, reference_omega_rot_R, reference_omega_rot_L);
-        // Serial.printf("Receive whole comamnd %s \r\n", buffer);
+        Serial.printf("%s REC\r\n", buffer);
         buffer = "";
       }
     }
