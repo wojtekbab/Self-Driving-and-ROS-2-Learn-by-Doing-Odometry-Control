@@ -139,8 +139,8 @@ namespace bumperbot_firmware
       std::string message;
       arduino_.ReadLine(message);
 
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("BumperbotInterface"),
-                         "Read message: \"" << message << "\"");
+      // RCLCPP_INFO_STREAM(rclcpp::get_logger("BumperbotInterface"),
+      //                    "Read message: \"" << message << "\"");
 
       std::stringstream ss(message);
       std::string res;
@@ -222,7 +222,7 @@ namespace bumperbot_firmware
     try
     {
       arduino_.Write(message_stream.str());
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("BumperbotInterface"), "Send " << message_stream.str());
+      // RCLCPP_INFO_STREAM(rclcpp::get_logger("BumperbotInterface"), "Send " << message_stream.str());
     }
     catch (...)
     {
