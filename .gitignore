@@ -4,3 +4,4 @@
 **/.catkin_workspace
 **/.vscode
 **.pyc
+venv/
