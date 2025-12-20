@@ -192,8 +192,8 @@ void speed_calculation_and_publishing(void *pvParameters)
       left_motor_vel_sign = 'n';
     }
     Serial.printf("r%c%05.2f,l%c%05.2f, SEND\r\n",
-              right_motor_vel_sign, fabs(omega_rot_R),
-              left_motor_vel_sign,  fabs(omega_rot_L));
+                  right_motor_vel_sign, fabs(omega_rot_R),
+                  left_motor_vel_sign, fabs(omega_rot_L));
 
     vTaskDelay(10 / portTICK_PERIOD_MS);
   }
@@ -244,6 +244,8 @@ void motors_task_and_reference_handle(void *pvParameters)
   PID leftMotor(&omega_rot_L, &control_signal_L, &reference_omega_rot_L, Kp_l, Ki_l, Kd_l, DIRECT);
   rightMotor.SetMode(AUTOMATIC);
   leftMotor.SetMode(AUTOMATIC);
+  rightMotor.SetOutputLimits(-1023, 1023);
+  leftMotor.SetOutputLimits(-1023, 1023);
 
   while (1)
   {
