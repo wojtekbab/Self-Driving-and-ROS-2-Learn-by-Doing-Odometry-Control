@@ -147,7 +147,7 @@ namespace bumperbot_firmware
 
       while (std::getline(ss, res, ','))
       {
-        // Pomijamy puste wyniki split
+        // skip empty results
         if (res.size() < 3)
           continue;
 
@@ -165,7 +165,9 @@ namespace bumperbot_firmware
         }
         catch (...)
         {
-          continue; // Nie rozpoznano liczby
+          RCLCPP_ERROR_STREAM(rclcpp::get_logger("BumperbotInterface"),
+                          "Error converting string to double: \"" << number << "\"");
+          continue; 
         }
 
         if (sign == 'n')
