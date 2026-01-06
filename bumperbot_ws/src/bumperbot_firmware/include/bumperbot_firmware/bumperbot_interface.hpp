@@ -6,7 +6,7 @@
 #include <libserial/SerialPort.h>
 #include <rclcpp_lifecycle/state.hpp>
 #include <rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp>
-#include <std_msgs/msg/float64_multi_array.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 
 #include <vector>
 #include <string>
@@ -41,7 +41,7 @@ private:
   std::vector<double> position_states_;
   std::vector<double> velocity_states_;
   rclcpp::Time last_run_;
-  rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr wheel_cmd_pub_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr wheel_cmd_pub_;
 };
 }  // namespace bumperbot_firmware
 
