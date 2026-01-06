@@ -190,11 +190,12 @@ namespace bumperbot_firmware
     return hardware_interface::return_type::OK;
   }
 
-  hardware_interface::return_type BumperbotInterface::write(const rclcpp::Time & time,
+  hardware_interface::return_type BumperbotInterface::write(const rclcpp::Time &,
                                                             const rclcpp::Duration &)
   {
     sensor_msgs::msg::JointState msg;
-    msg.header.stamp = time;
+    // msg.header.stamp = time; time since process start, not epoch
+    msg.header.stamp = get_node()->get_clock()->now();
     msg.name = {"right_wheel_joint", "left_wheel_joint"};
     msg.velocity = {velocity_commands_.at(0), velocity_commands_.at(1)};
     wheel_cmd_pub_->publish(msg);
