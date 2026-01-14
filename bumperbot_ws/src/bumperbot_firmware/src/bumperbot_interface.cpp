@@ -172,16 +172,17 @@ namespace bumperbot_firmware
 
         if (sign == 'n')
           value = -value;
-
+        
+        // index depends on order of joints in urdf 
         if (motor == 'r')
-        {
-          velocity_states_[0] = value;
-          position_states_[0] += value * dt;
-        }
-        else if (motor == 'l')
         {
           velocity_states_[1] = value;
           position_states_[1] += value * dt;
+        }
+        else if (motor == 'l')
+        {
+          velocity_states_[0] = value;
+          position_states_[0] += value * dt;
         }
       }
 
@@ -201,11 +202,12 @@ namespace bumperbot_firmware
     wheel_cmd_pub_->publish(msg);
     // Implement communication protocol with the Arduino
     std::stringstream message_stream;
-    char right_wheel_sign = velocity_commands_.at(0) >= 0 ? 'p' : 'n';
-    char left_wheel_sign = velocity_commands_.at(1) >= 0 ? 'p' : 'n';
+    // index depend on order of joints in urdf
+    char right_wheel_sign = velocity_commands_.at(1) >= 0 ? 'p' : 'n';
+    char left_wheel_sign = velocity_commands_.at(0) >= 0 ? 'p' : 'n';
     std::string compensate_zeros_right = "";
     std::string compensate_zeros_left = "";
-    if (std::abs(velocity_commands_.at(0)) < 10.0)
+    if (std::abs(velocity_commands_.at(1)) < 10.0)
     {
       compensate_zeros_right = "0";
     }
@@ -213,7 +215,7 @@ namespace bumperbot_firmware
     {
       compensate_zeros_right = "";
     }
-    if (std::abs(velocity_commands_.at(1)) < 10.0)
+    if (std::abs(velocity_commands_.at(0)) < 10.0)
     {
       compensate_zeros_left = "0";
     }
