@@ -15,6 +15,7 @@ find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
 find_package(PkgConfig)
+find_package(sensor_msgs REQUIRED)
 pkg_check_modules(SERIAL libserial)
 
 ament_python_install_package(${PROJECT_NAME})
@@ -33,6 +34,7 @@ ament_target_dependencies(${PROJECT_NAME}
   pluginlib
   rclcpp
   rclcpp_lifecycle
+  sensor_msgs
 )
 
 pluginlib_export_plugin_description_file(hardware_interface bumperbot_interface.xml)

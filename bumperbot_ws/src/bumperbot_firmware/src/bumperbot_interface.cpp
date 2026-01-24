@@ -26,6 +26,8 @@ namespace bumperbot_firmware
 
   CallbackReturn BumperbotInterface::on_init(const hardware_interface::HardwareInfo &hardware_info)
   {
+    auto node = get_node();
+    wheel_cmd_pub_ = node->create_publisher<sensor_msgs::msg::JointState>("/wheel_velocity_ref", 10);
     CallbackReturn result = hardware_interface::SystemInterface::on_init(hardware_info);
     if (result != CallbackReturn::SUCCESS)
     {
@@ -137,15 +139,15 @@ namespace bumperbot_firmware
       std::string message;
       arduino_.ReadLine(message);
 
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("BumperbotInterface"),
-                         "Read message: \"" << message << "\"");
+      // RCLCPP_INFO_STREAM(rclcpp::get_logger("BumperbotInterface"),
+      //                    "Read message: \"" << message << "\"");
 
       std::stringstream ss(message);
       std::string res;
 
       while (std::getline(ss, res, ','))
       {
-        // Pomijamy puste wyniki split
+        // skip empty results
         if (res.size() < 3)
           continue;
 
@@ -163,21 +165,24 @@ namespace bumperbot_firmware
         }
         catch (...)
         {
-          continue; // Nie rozpoznano liczby
+          RCLCPP_ERROR_STREAM(rclcpp::get_logger("BumperbotInterface"),
+                          "Error converting string to double: \"" << number << "\"");
+          continue; 
         }
 
         if (sign == 'n')
           value = -value;
-
+        
+        // index depends on order of joints in urdf 
         if (motor == 'r')
-        {
-          velocity_states_[0] = value;
-          position_states_[0] += value * dt;
-        }
-        else if (motor == 'l')
         {
           velocity_states_[1] = value;
           position_states_[1] += value * dt;
+        }
+        else if (motor == 'l')
+        {
+          velocity_states_[0] = value;
+          position_states_[0] += value * dt;
         }
       }
 
@@ -189,13 +194,20 @@ namespace bumperbot_firmware
   hardware_interface::return_type BumperbotInterface::write(const rclcpp::Time &,
                                                             const rclcpp::Duration &)
   {
+    sensor_msgs::msg::JointState msg;
+    // msg.header.stamp = time; time since process start, not epoch
+    msg.header.stamp = get_node()->get_clock()->now();
+    msg.name = {"right_wheel_joint", "left_wheel_joint"};
+    msg.velocity = {velocity_commands_.at(0), velocity_commands_.at(1)};
+    wheel_cmd_pub_->publish(msg);
     // Implement communication protocol with the Arduino
     std::stringstream message_stream;
-    char right_wheel_sign = velocity_commands_.at(0) >= 0 ? 'p' : 'n';
-    char left_wheel_sign = velocity_commands_.at(1) >= 0 ? 'p' : 'n';
+    // index depend on order of joints in urdf
+    char right_wheel_sign = velocity_commands_.at(1) >= 0 ? 'p' : 'n';
+    char left_wheel_sign = velocity_commands_.at(0) >= 0 ? 'p' : 'n';
     std::string compensate_zeros_right = "";
     std::string compensate_zeros_left = "";
-    if (std::abs(velocity_commands_.at(0)) < 10.0)
+    if (std::abs(velocity_commands_.at(1)) < 10.0)
     {
       compensate_zeros_right = "0";
     }
@@ -203,7 +215,7 @@ namespace bumperbot_firmware
     {
       compensate_zeros_right = "";
     }
-    if (std::abs(velocity_commands_.at(1)) < 10.0)
+    if (std::abs(velocity_commands_.at(0)) < 10.0)
     {
       compensate_zeros_left = "0";
     }
@@ -217,7 +229,7 @@ namespace bumperbot_firmware
     try
     {
       arduino_.Write(message_stream.str());
-      RCLCPP_INFO_STREAM(rclcpp::get_logger("BumperbotInterface"), "Send " << message_stream.str());
+      // RCLCPP_INFO_STREAM(rclcpp::get_logger("BumperbotInterface"), "Send " << message_stream.str());
     }
     catch (...)
     {

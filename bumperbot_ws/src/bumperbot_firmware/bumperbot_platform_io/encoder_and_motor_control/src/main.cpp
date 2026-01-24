@@ -191,9 +191,9 @@ void speed_calculation_and_publishing(void *pvParameters)
     {
       left_motor_vel_sign = 'n';
     }
-    Serial.printf("r%c%05.2f,l%c%05.2f,\r\n",
-              right_motor_vel_sign, fabs(omega_rot_R),
-              left_motor_vel_sign,  fabs(omega_rot_L));
+    Serial.printf("r%c%05.2f,l%c%05.2f,\n",
+                  right_motor_vel_sign, fabs(omega_rot_R),
+                  left_motor_vel_sign, fabs(omega_rot_L));
 
     vTaskDelay(10 / portTICK_PERIOD_MS);
   }
@@ -201,8 +201,8 @@ void speed_calculation_and_publishing(void *pvParameters)
 
 void motors_task_and_reference_handle(void *pvParameters)
 {
-  // setting PWM properties
-  const int freq = 5000;
+    // setting PWM properties
+  const int freq = 20000;
   const int chanel_mot1_A = 0;
   const int chanel_mot1_B = 1;
   const int chanel_mot2_A = 2;
@@ -232,18 +232,22 @@ void motors_task_and_reference_handle(void *pvParameters)
   ledcAttachPin(GPIO_MOT2_PWM_L, chanel_mot2_B);
 
   // Tuning
-  double Kp_r = 40;
-  double Ki_r = 30;
-  double Kd_r = 0.1;
-  double Kp_l = 40;
-  double Ki_l = 30;
-  double Kd_l = 0.1;
+  double Kp_r = 50;
+  double Ki_r = 100;
+  double Kd_r = 0.0;
+  double Kp_l = 50;
+  double Ki_l = 100;
+  double Kd_l = 0.0;
 
   // Controller
   PID rightMotor(&omega_rot_R, &control_signal_R, &reference_omega_rot_R, Kp_r, Ki_r, Kd_r, DIRECT);
   PID leftMotor(&omega_rot_L, &control_signal_L, &reference_omega_rot_L, Kp_l, Ki_l, Kd_l, DIRECT);
+  rightMotor.SetSampleTime(10);
+  leftMotor.SetSampleTime(10);
   rightMotor.SetMode(AUTOMATIC);
   leftMotor.SetMode(AUTOMATIC);
+  rightMotor.SetOutputLimits(-1023, 1023);
+  leftMotor.SetOutputLimits(-1023, 1023);
 
   while (1)
   {
@@ -251,13 +255,13 @@ void motors_task_and_reference_handle(void *pvParameters)
     {
       char c = Serial.read();
 
-      if (c != '\r') // ignoruj carriage return
+      if (c != '\r') // ignore carriage return
         buffer += c;
 
       if (c == '\n')
       {
         decodeCommand(buffer, reference_omega_rot_R, reference_omega_rot_L);
-        // Serial.printf("Receive whole comamnd %s \r\n", buffer);
+        // Serial.printf("%s REC\r\n", buffer);
         buffer = "";
       }
     }
