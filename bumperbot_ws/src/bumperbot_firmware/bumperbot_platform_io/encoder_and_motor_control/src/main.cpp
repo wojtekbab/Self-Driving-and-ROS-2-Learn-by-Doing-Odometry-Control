@@ -201,13 +201,16 @@ void speed_calculation_and_publishing(void *pvParameters)
 
 void motors_task_and_reference_handle(void *pvParameters)
 {
-    // setting PWM properties
+  // setting PWM properties
   const int freq = 20000;
   const int chanel_mot1_A = 0;
   const int chanel_mot1_B = 1;
   const int chanel_mot2_A = 2;
   const int chanel_mot2_B = 3;
   const int resolution = 10;
+
+  const double EPS_REF = 0.01;   // rad/s
+  const double EPS_OMEGA = 0.05; // rad/s
 
   double omega_rot_R = 0.0f; // rotor (relative) angular speed
   double omega_rot_L = 0.0f;
@@ -275,6 +278,23 @@ void motors_task_and_reference_handle(void *pvParameters)
     // compute control after inputs are updated
     rightMotor.Compute();
     leftMotor.Compute();
+
+    // when v_ref close to 0, set manually 0 and reset integrator
+    if (abs(reference_omega_rot_R) < EPS_REF &&
+        abs(omega_rot_R) < EPS_OMEGA)
+    {
+      rightMotor.SetMode(MANUAL);
+      control_signal_R = 0;
+      rightMotor.SetMode(AUTOMATIC);
+    }
+
+    if (abs(reference_omega_rot_L) < EPS_REF &&
+        abs(omega_rot_L) < EPS_OMEGA)
+    {
+      leftMotor.SetMode(MANUAL);
+      control_signal_L = 0;
+      leftMotor.SetMode(AUTOMATIC);
+    }
 
     // // saturate signal with limit  +/-12V
     double PWM_mot_R = saturation(control_signal_R, 1024.0f);
