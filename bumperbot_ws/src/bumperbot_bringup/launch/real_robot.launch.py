@@ -43,7 +43,8 @@ def generate_launch_description():
         ),
         launch_arguments={
             "use_simple_controller": "False",
-            "use_python": "False"
+            "use_python": "False",
+            "use_sim_time": "False"
         }.items(),
     )
     
@@ -60,7 +61,8 @@ def generate_launch_description():
 
     imu_driver_node = Node(
         package="bumperbot_firmware",
-        executable="mpu6050_driver.py"
+        executable="mpu6050_driver.py",
+        
     )
 
     safety_stop = Node(
@@ -75,6 +77,9 @@ def generate_launch_description():
             "launch",
             "global_localization.launch.py"
         ),
+        launch_arguments={
+            "use_sim_time": "False"
+        }.items(),
         condition=UnlessCondition(use_slam)
     )
 
@@ -84,6 +89,9 @@ def generate_launch_description():
             "launch",
             "slam.launch.py"
         ),
+        launch_arguments={
+            "use_sim_time": "False"
+        }.items(),
         condition=IfCondition(use_slam)
     )
     
